@@ -2,8 +2,8 @@
 ### Recommendation Systems & Predictive Analytics for Tampa Bay Restaurants & Bars
 
 **Course:** MAS 651 — Applied Machine Learning (Spring 2026)
+
 **University of Miami**
-**Team:** Daniel Regalado Cardoso
 
 ---
 
