@@ -1,7 +1,9 @@
 # MAS 651 Final Project: Yelp Restaurant & Bar Analytics — Tampa Bay
 
 **Course:** MAS 651 — University of Miami
+
 **Authors:** Daniel Regalado Cardoso, Jeanne Hassoun, Luna Gerlic
+
 **Date:** Spring 2025
 
 ---
