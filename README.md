@@ -1,115 +1,148 @@
-# MAS 651 Final Project: Yelp Data Analysis
-### Recommendation Systems & Predictive Analytics for Tampa Bay Restaurants & Bars
+# MAS 651 Final Project: Yelp Restaurant & Bar Analytics — Tampa Bay
 
-**Course:** MAS 651 — Applied Machine Learning (Spring 2026)
-
-**University of Miami**
+**Course:** MAS 651 — University of Miami
+**Authors:** Daniel Regalado Cardoso, Jeanne Hassoun, Luna Gerlic
+**Date:** Spring 2025
 
 ---
 
 ## Overview
 
-This project implements a full analytics pipeline on the [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/), simulating a real-world business analytics scenario for the Tampa Bay, Florida restaurant and bar market.
+This project delivers an end-to-end analytics pipeline on the [Yelp Open Dataset](https://www.yelp.com/dataset), focusing on restaurants, bars, and coffee & tea businesses across the Tampa Bay metropolitan area (15 cities in Florida). It addresses three interconnected problems:
 
-**Key Components:**
+1. **Recommendation Systems** — Popularity baselines, SVD collaborative filtering, Neural Collaborative Filtering (NCF), and a hybrid item-to-item similarity engine.
+2. **Cold-Start Mitigation** — Strategies for new users with no rating history, evaluated with beyond-accuracy metrics (coverage, diversity, novelty, popularity bias).
+3. **Business Survival Prediction** — Forecasting closure risk from early operational signals using Optuna-tuned classifiers (Logistic Regression, Random Forest, XGBoost) and Kaplan-Meier / Cox Proportional Hazards survival analysis.
 
-- **Recommendation System:** Popularity baseline, SVD collaborative filtering (user → business), and hybrid item-to-item similarity (content + collaborative)
-- **Cold-Start Analysis:** Hybrid fallback strategy for new users with beyond-accuracy metrics (coverage, diversity, popularity bias)
-- **Predictive Analytics:** Churn/survival analysis predicting business closure using early-life features, Kaplan-Meier curves, and Cox Proportional Hazards modeling
-
-## Dataset
-
-| Source | Description |
-|--------|-------------|
-| **Raw Data** | [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/) (~4.3 GB) |
-| **Google Drive** | [yelp_dataset.tar](https://drive.google.com/file/d/1wzVfcOyvjh5u3ZpC__f6-5Gg13m0V_Rr/view?usp=share_link) |
-| **Preprocessed** | Available in `preprocessed_data/` (filtered Tampa Bay restaurants & bars) |
-
-### Filtering Criteria
-
-- **Geography:** Tampa Bay metro area (Tampa, Clearwater, St. Petersburg, Brandon, +12 surrounding cities)
-- **Categories:** Restaurants, Bars, Food, Nightlife
-- **Users:** ≥ 5 reviews
-- **Businesses:** ≥ 20 reviews
-- **Final dataset:** ~341K reviews, ~23K users, ~4K businesses
+---
 
 ## Repository Structure
 
 ```
 MAS651-Final-Project/
-├── README.md
-├── requirements.txt
-├── MAS651_Final_Project_Tampa_Yelp.ipynb    # Main notebook (run sequentially)
-├── preprocessed_data/                        # Filtered CSVs for reproducibility
-│   ├── tampa_businesses.csv
-│   ├── tampa_reviews.csv
-│   ├── tampa_users.csv
-│   ├── tampa_checkins.csv
-│   └── tampa_tips.csv
-└── .gitignore
+├── MAS651_Final_Project_Yelp_v4-3.ipynb   # Main analysis notebook (all code + results)
+├── MAS651_Final_Project_Report.pdf         # Written project report
+├── MAS65_Final_Project.pptx.pdf            # Presentation slides (PDF)
+├── preprocessed_data/
+│   ├── README.md                           # Instructions for obtaining preprocessed CSVs
+│   └── .gitkeep
+├── requirements.txt                        # Python dependencies
+├── .gitignore
+└── README.md                               # This file
 ```
 
-## Quick Start
+---
 
-### Option A: Run from preprocessed data (recommended)
+## Dataset
+
+The analysis uses the Yelp Open Dataset (~4.3 GB of JSON files):
+
+| Source File      | Raw Rows     |
+|------------------|-------------|
+| `business.json`  | 150,346     |
+| `review.json`    | 6,990,280   |
+| `user.json`      | 1,987,897   |
+| `checkin.json`   | 131,930     |
+| `tip.json`       | 908,915     |
+
+After geographic and category filtering (Tampa Bay — Restaurants, Bars & Coffee/Tea), the data is organized into three density tiers:
+
+| Tier | Purpose                 | Reviews   | Users  | Businesses | Sparsity |
+|------|-------------------------|-----------|--------|------------|----------|
+| 1    | Full scope (EDA + Churn)| 323,775   | 22,657 | 3,769      | 99.62%   |
+| 2    | Item-to-Item similarity | 190,746   | 7,352  | 2,218      | 98.83%   |
+| 3    | Dense core (SVD / NCF)  | 100,669   | 2,279  | 1,390      | 96.82%   |
+
+---
+
+## Notebook Structure
+
+The notebook (`MAS651_Final_Project_Yelp_v4-3.ipynb`) is organized into 9 sections:
+
+1. **Setup & Configuration** — Dependencies and library initialization
+2. **Data Loading** — Yelp JSON file ingestion
+3. **Preprocessing & Tiered Filtering**
+   - Geographic & category filtering
+   - Tier 1 (full scope), Tier 2 (medium density), Tier 3 (dense core)
+   - Save / load preprocessed data
+4. **Exploratory Data Analysis (EDA)** — Distributions, temporal patterns, activity analysis, open vs. closed businesses, sparsity
+5. **Leakage-Safe Train/Test Split** — Temporal split to prevent data leakage
+6. **Recommendation Systems**
+   - 6.1 Popularity Baseline
+   - 6.2 Item-to-Item Hybrid Similarity
+   - 6.3 SVD Collaborative Filtering
+   - 6.4 Neural Collaborative Filtering (NCF)
+   - 6.5 Cold-Start Bridge
+   - 6.6 Beyond-Accuracy Metrics (coverage, diversity, novelty, bias)
+   - 6.7 Hit Rate Evaluation
+7. **Predictive Analysis: Churn / Survival**
+   - 7.1 Feature Engineering
+   - 7.2 Optuna-Tuned Classification Models
+   - 7.3 Decision Threshold Optimization
+   - 7.4 Feature Importance (SHAP)
+   - 7.5 Survival Analysis (Kaplan-Meier, Cox PH)
+8. **Business Insights & Recommendations**
+9. **Conclusion**
+
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Python 3.9–3.12 (scikit-surprise requires ≤3.12)
+- ~4.3 GB disk space for the raw Yelp dataset (or use preprocessed data)
+
+### Installation
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/MAS651-Final-Project.git
+git clone https://github.com/DanielRegaladoUMiami/MAS651-Final-Project.git
 cd MAS651-Final-Project
 pip install -r requirements.txt
-jupyter notebook MAS651_Final_Project_Tampa_Yelp.ipynb
 ```
 
-### Option B: Run in Google Colab
+### Data Access
 
-1. Open the notebook in [Google Colab](https://colab.research.google.com/)
-2. The first cells automatically install dependencies and download the raw dataset from Google Drive
-3. Run all cells sequentially
+There are two paths to run the notebook:
 
-## Methodology
+| Path | Steps | Time |
+|------|-------|------|
+| **From raw data** | Run notebook cells 1–17 to download and preprocess | ~15–20 min |
+| **Preprocessed shortcut** | Load pre-built CSVs via Section 3.5 | ~1 min |
 
-### Recommendation System
+> **Note:** Preprocessed CSVs (~276 MB total) are too large for GitHub. The notebook provides a Google Drive download link, or you can generate them by running the preprocessing cells.
 
-| Model | Type | Description |
-|-------|------|-------------|
-| Popularity Baseline | Non-personalized | Bayesian-weighted popularity score |
-| SVD | Collaborative Filtering | Matrix factorization with GridSearchCV tuning |
-| Item-to-Item Hybrid | Content + Collaborative | Cosine similarity on combined feature vectors (α=0.6 content, 0.4 collaborative) |
+### Running on Google Colab
 
-### Evaluation Metrics
+The notebook includes Colab-compatible setup cells that install all dependencies and download data automatically via `gdown`.
 
-- **Accuracy:** RMSE, MAE, Hit Rate@K
-- **Beyond-accuracy:** Catalog coverage, intra-list diversity, popularity bias
+---
 
-### Churn Prediction
+## Key Technologies
 
-- **Models:** Logistic Regression, Random Forest, Gradient Boosting
-- **Features:** Early-life metrics (first 12 months) — review velocity, avg rating, engagement, unique reviewers
-- **Survival Analysis:** Kaplan-Meier curves + Cox Proportional Hazards
+| Category | Libraries |
+|----------|-----------|
+| Data manipulation | pandas, numpy, scipy |
+| Visualization | matplotlib, seaborn |
+| Machine learning | scikit-learn, xgboost |
+| Recommender systems | scikit-surprise (SVD, NMF, BaselineOnly) |
+| Deep learning | PyTorch (Neural Collaborative Filtering) |
+| Hyperparameter tuning | Optuna |
+| Model interpretability | SHAP |
+| Survival analysis | lifelines (Kaplan-Meier, Cox PH) |
+| Statistics | statsmodels |
+
+---
 
 ## Reproducibility
 
-| Parameter | Value |
-|-----------|-------|
-| Random Seed | 42 |
-| Train/Test Split | Per-user time-based holdout |
-| SVD Tuning | 3-fold GridSearchCV |
-| Churn Split | 80/20 stratified |
-| Python | 3.10+ |
+- **Random seed:** 42 (fixed across all stochastic processes)
+- **Train/test split:** Temporal (leakage-safe)
+- **Hyperparameters:** Documented and Optuna-logged
+- **Environment:** Tested on Google Colab and local Python 3.9.6
 
-## Requirements
-
-```
-pandas>=2.0
-numpy>=1.24
-scikit-learn>=1.3
-scikit-surprise>=1.1
-lifelines>=0.27
-matplotlib>=3.7
-seaborn>=0.12
-scipy>=1.10
-```
+---
 
 ## License
 
-This project uses the [Yelp Open Dataset](https://business.yelp.com/data/resources/open-dataset/) for academic purposes under Yelp's Dataset License.
+This project was developed as part of the MAS 651 coursework at the University of Miami.
